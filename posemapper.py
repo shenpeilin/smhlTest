@@ -35,16 +35,28 @@ class Rodrigues(ch.Ch):
 
 class RotWithMedian(ch.Ch):
     dterms = 'protMat','matchMat'
+    terms = 'indexArray'
     def compute_r(self):
         dx = ch.sort(self.matchMat[:,0])[self.matchMat.shape[0]/2]-ch.sort(self.protMat[:,0])[self.protMat.shape[0]/2]
         dy = ch.sort(self.matchMat[:,1])[self.matchMat.shape[0]/2]-ch.sort(self.protMat[:,1])[self.protMat.shape[0]/2]
         dz = ch.sort(self.matchMat[:,2])[self.matchMat.shape[0]/2]-ch.sort(self.protMat[:,2])[self.protMat.shape[0]/2]
-        return self.matchMat.r - (self.protMat.r+np.array([dx[0],dy[0],dz[0]]).reshape(1,3))
+        npa = np.array(self.protMat.r+np.array([dx[0],dy[0],dz[0]]).reshape(1,3),np.float32)
+        b = np.array(self.matchMat.r,np.float32)
+        indexArray = np.zeros(npa.shape[0] , np.int32)
+        FLANN_INDEX_KDTREE = 1
+        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 8)
+        search_params = dict(checks=50)   # or pass empty dictionary
+        flann = cv2.FlannBasedMatcher(index_params,search_params)
+        matches = flann.knnMatch(npa,b,k=1)
+        for i in range(0,npa.shape[0]):
+            indexArray[i] = matches[i][0].trainIdx       
+        self.indexArray = indexArray
+        return self.matchMat.r[indexArray,:] - (self.protMat.r+np.array([dx[0],dy[0],dz[0]]).reshape(1,3))
     def compute_dr_wrt(self, wrt):
         if (wrt is self.protMat) == (wrt is self.matchMat):
             return None
         m = -1. if wrt is self.protMat else 1.
-        return ch_ops._broadcast_matrix(self.matchMat,self.protMat,wrt,m)
+        return ch_ops._broadcast_matrix(self.matchMat[self.indexArray,:],self.protMat,wrt,m)
 
 
 def lrotmin(p): 

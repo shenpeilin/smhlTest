@@ -1,5 +1,12 @@
 import cPickle as pickle
 import numpy as np
+import chumpy as ch
+
+def readyArgument(dd):
+    for s in ['v','J','pose','weights']:
+        if (s in dd) and not hasattr(dd[s] , 'dterms'):
+            dd[s] = ch.array(dd[s])
+    return dd
 
 def loadObj(fname):
     dd = {}
@@ -17,7 +24,7 @@ def loadObj(fname):
                 flist.append(face)
     dd["v"]=np.array(vlist)
     dd["f"]=np.array(flist)
-    return dd
+    return readyArgument(dd)
 
 def loadTemplate():
     dd = {}
@@ -45,4 +52,5 @@ def loadTemplate():
             w.insert(0,1-sum(w))
             weights.append(w)
     dd["weights"] = np.array(weights)
-    return dd
+    dd["pose"] = np.zeros(dd["kintree_table"].shape[1]*3)
+    return readyArgument(dd)

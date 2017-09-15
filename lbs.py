@@ -56,7 +56,6 @@ def global_rigid_transformation(pose, J, kintree_table, xp):
             ) for i in range(len(results))]
         results = results2
     result = xp.dstack(results)
-    print result.shape
     return result, results_global
 
 
