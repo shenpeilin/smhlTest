@@ -1,6 +1,7 @@
 import cPickle as pickle
 import numpy as np
 import chumpy as ch
+import xml.etree.ElementTree as ET
 
 def readyArgument(dd):
     for s in ['v','J','pose','weights']:
@@ -24,6 +25,15 @@ def loadObj(fname):
                 flist.append(face)
     dd["v"]=np.array(vlist)
     dd["f"]=np.array(flist)
+
+    ppFname = fname.replace("obj","pp")
+    plist = []
+    tree = ET.parse(ppFname)
+    root = tree.getroot()
+    for i in range(1,5):
+        point = [float(root[i].get('x')),float(root[i].get('y')),float(root[i].get('z'))]
+        plist.append(point)
+    dd["pp"] = np.array(plist)
     return readyArgument(dd)
 
 def loadTemplate():

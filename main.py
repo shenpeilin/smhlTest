@@ -45,7 +45,7 @@ def objFunc(dd,m):
     return ch.linalg.norm(RotWithMedian(protMat = verts_core(**args),matchMat=m['v']))
 
 dd=loadTemplate()
-m = loadObj('./HandScan/20140114_hand04edit.obj')
+m = loadObj('./HandScan/ZhangYueYi3.obj')
 
 # protMat = ch.array(m["v"])
 # m["v"] = ch.array(rotation(m["v"]))
