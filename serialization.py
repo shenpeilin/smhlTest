@@ -30,7 +30,7 @@ def loadObj(fname):
     plist = []
     tree = ET.parse(ppFname)
     root = tree.getroot()
-    for i in range(1,5):
+    for i in range(1,6):
         point = [float(root[i].get('x')),float(root[i].get('y')),float(root[i].get('z'))]
         plist.append(point)
     dd["pp"] = np.array(plist)

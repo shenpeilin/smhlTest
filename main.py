@@ -42,19 +42,18 @@ def objFunc(dd,m):
         'want_Jtr': False,
         'bs_style': 'lbs',
     }
-    return ch.linalg.norm(RotWithMedian(protMat = verts_core(**args),matchMat=m['v']))
+    return ch.linalg.norm(RotWithMedian(protMat = verts_core(**args),matchMat=m['v']))+1000*ch.linalg.norm(dd['pose'])
 
 dd=loadTemplate()
 m = loadObj('./HandScan/ZhangYueYi3.obj')
 
 # protMat = ch.array(m["v"])
 # m["v"] = ch.array(rotation(m["v"]))
-R = ch.zeros((1,3))
 # t = ch.array([1,2,3])
 # renderObj(ch.array(result/ch.max(result)),dd["f"])
-ch.minimize(func(dd['v'],m['v'],R) , [R])
-dd["v"]=Rodrigues(R).dot(dd["v"].T).T
-dd["J"]=Rodrigues(R).dot(dd["J"].T).T
+affine = cv2.estimateAffine3D(dd['pp'],m['pp'])[1]
+dd["v"]=ch.array(affine[:,0:3].dot(dd["v"].T).T+affine[:,3].T)
+dd["J"]=ch.array(affine[:,0:3].dot(dd["J"].T).T+affine[:,3].T)
 ch.minimize(objFunc(dd,m),[dd["pose"]])
 args = {
     'pose': dd['pose'],
@@ -71,3 +70,13 @@ result = verts_core(**args)
 print dd['pose']
 renderObj(ch.array(result/ch.max(result)),dd["f"])
 
+outmesh_path = './output.obj'
+with open( outmesh_path, 'w') as fp:
+    for v in result.r:
+        fp.write( 'v %f %f %f\n' % ( v[0], v[1], v[2]) )
+
+    for f in dd['f']+1: # Faces are 1-based, not 0-based in obj files
+        fp.write( 'f %d %d %d\n' %  (f[0], f[1], f[2]) )
+
+## Print message
+print '..Output mesh saved to: ', outmesh_path 

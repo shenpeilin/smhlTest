@@ -37,10 +37,7 @@ class RotWithMedian(ch.Ch):
     dterms = 'protMat','matchMat'
     terms = 'indexArray'
     def compute_r(self):
-        dx = ch.sort(self.matchMat[:,0])[self.matchMat.shape[0]/2]-ch.sort(self.protMat[:,0])[self.protMat.shape[0]/2]
-        dy = ch.sort(self.matchMat[:,1])[self.matchMat.shape[0]/2]-ch.sort(self.protMat[:,1])[self.protMat.shape[0]/2]
-        dz = ch.sort(self.matchMat[:,2])[self.matchMat.shape[0]/2]-ch.sort(self.protMat[:,2])[self.protMat.shape[0]/2]
-        npa = np.array(self.protMat.r+np.array([dx[0],dy[0],dz[0]]).reshape(1,3),np.float32)
+        npa = np.array(self.protMat.r,np.float32)
         b = np.array(self.matchMat.r,np.float32)
         indexArray = np.zeros(npa.shape[0] , np.int32)
         FLANN_INDEX_KDTREE = 1
@@ -51,7 +48,7 @@ class RotWithMedian(ch.Ch):
         for i in range(0,npa.shape[0]):
             indexArray[i] = matches[i][0].trainIdx       
         self.indexArray = indexArray
-        return self.matchMat.r[indexArray,:] - (self.protMat.r+np.array([dx[0],dy[0],dz[0]]).reshape(1,3))
+        return self.matchMat.r[indexArray,:] - self.protMat.r
     def compute_dr_wrt(self, wrt):
         if (wrt is self.protMat) == (wrt is self.matchMat):
             return None
