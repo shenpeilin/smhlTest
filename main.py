@@ -29,7 +29,7 @@ def mapTwoMat(mat1,mat2):
         mat1 = R.dot(mat1.T).T
     return x
 def func(mat1,mat2,R):
-    return ch.linalg.norm(RotWithMedian(protMat=Rodrigues(R).dot(mat1.T).T,matchMat=mat2))
+    return ch.linalg.norm(Rodrigues(R).dot(mat1.T).T-mat2)
 
 def objFunc(dd,m):
     args = {
@@ -42,7 +42,7 @@ def objFunc(dd,m):
         'want_Jtr': False,
         'bs_style': 'lbs',
     }
-    return ch.linalg.norm(RotWithMedian(protMat = verts_core(**args),matchMat=m['v']))+1000*ch.linalg.norm(dd['pose'])
+    return ch.linalg.norm(RotWithMedian(protMat = verts_core(**args),matchMat=m['v']))+100*ch.linalg.norm(dd['pose'])
 
 dd=loadTemplate()
 m = loadObj('./HandScan/ZhangYueYi3.obj')
@@ -51,9 +51,13 @@ m = loadObj('./HandScan/ZhangYueYi3.obj')
 # m["v"] = ch.array(rotation(m["v"]))
 # t = ch.array([1,2,3])
 # renderObj(ch.array(result/ch.max(result)),dd["f"])
-affine = cv2.estimateAffine3D(dd['pp'],m['pp'])[1]
-dd["v"]=ch.array(affine[:,0:3].dot(dd["v"].T).T+affine[:,3].T)
-dd["J"]=ch.array(affine[:,0:3].dot(dd["J"].T).T+affine[:,3].T)
+R = ch.zeros(3)
+t = m['pp'][4]-dd['pp'][4]
+ch.minimize(func(dd['pp'][0:5,:]+t,m['pp'][0:5,:],R),[R])
+dd['v'] = dd['v']+t
+dd['J'] = dd['J']+t
+dd['v'] = Rodrigues(R).dot(dd['v'].T).T
+dd['J'] = Rodrigues(R).dot(dd['J'].T).T
 ch.minimize(objFunc(dd,m),[dd["pose"]])
 args = {
     'pose': dd['pose'],
