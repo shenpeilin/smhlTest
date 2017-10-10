@@ -35,18 +35,15 @@ class Rodrigues(ch.Ch):
 
 class RotWithMedian(ch.Ch):
     dterms = 'protMat','matchMat'
-    terms = 'indexArray'
+    terms = 'dlist','mlist','indexArray'
     def compute_r(self):
         npa = np.array(self.protMat.r,np.float32)
         b = np.array(self.matchMat.r,np.float32)
         indexArray = np.zeros(npa.shape[0] , np.int32)
-        FLANN_INDEX_KDTREE = 1
-        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 8)
-        search_params = dict(checks=50)   # or pass empty dictionary
-        flann = cv2.FlannBasedMatcher(index_params,search_params)
-        matches = flann.knnMatch(npa,b,k=1)
-        for i in range(0,npa.shape[0]):
-            indexArray[i] = matches[i][0].trainIdx       
+        for i in range(0,20):
+            matches = getMatches(npa[self.dlist[i],:], b[self.mlist[i],:])
+            for j in range(0,len(self.dlist[i])):
+                indexArray[self.dlist[i][j]] = self.mlist[i][matches[j][0].trainIdx]
         self.indexArray = indexArray
         return self.matchMat.r[indexArray,:] - self.protMat.r
     def compute_dr_wrt(self, wrt):
@@ -70,3 +67,11 @@ def posemap(s):
         return lrotmin
     else:
         raise Exception('Unknown posemapping: %s' % (str(s),))
+
+def getMatches(a,b):
+    FLANN_INDEX_KDTREE = 1
+    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 8)
+    search_params = dict(checks=50)   # or pass empty dictionary
+    flann = cv2.FlannBasedMatcher(index_params,search_params)
+    matches = flann.knnMatch(a,b,k=1)
+    return matches

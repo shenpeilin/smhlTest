@@ -31,7 +31,7 @@ def mapTwoMat(mat1,mat2):
 def func(mat1,mat2,R):
     return ch.linalg.norm(Rodrigues(R).dot(mat1.T).T-mat2)
 
-def objFunc(dd,m):
+def objFunc(dd,m,indexList):
     args = {
         'pose': dd['pose'],
         'v': dd['v'],
@@ -42,7 +42,7 @@ def objFunc(dd,m):
         'want_Jtr': False,
         'bs_style': 'lbs',
     }
-    return ch.linalg.norm(RotWithMedian(protMat = verts_core(**args),matchMat=m['v']))+100*ch.linalg.norm(dd['pose'])
+    return ch.linalg.norm(RotWithMedian(protMat = verts_core(**args),matchMat=m['v'], dlist = dd['pv'], mlist = m['pv'])[indexList])
 
 dd=loadTemplate()
 m = loadObj('./HandScan/ZhangYueYi3.obj')
@@ -58,7 +58,10 @@ dd['v'] = dd['v']+t
 dd['J'] = dd['J']+t
 dd['v'] = Rodrigues(R).dot(dd['v'].T).T
 dd['J'] = Rodrigues(R).dot(dd['J'].T).T
-ch.minimize(objFunc(dd,m),[dd["pose"]])
+indexList = []
+for i in range(6,20):
+    indexList=indexList+dd['pv'][i]
+ch.minimize(objFunc(dd,m,indexList),[dd["pose"]])
 args = {
     'pose': dd['pose'],
     'v': dd['v'],

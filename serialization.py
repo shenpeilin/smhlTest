@@ -2,6 +2,7 @@ import cPickle as pickle
 import numpy as np
 import chumpy as ch
 import xml.etree.ElementTree as ET
+from posemapper import getMatches
 
 def readyArgument(dd):
     for s in ['v','J','pose','weights']:
@@ -30,10 +31,16 @@ def loadObj(fname):
     plist = []
     tree = ET.parse(ppFname)
     root = tree.getroot()
-    for i in range(1,45):
+    for i in range(1,21):
         point = [float(root[i].get('x')),float(root[i].get('y')),float(root[i].get('z'))]
         plist.append(point)
     dd["pp"] = np.array(plist)
+    matches = getMatches(np.array(dd['v'],np.float32),np.array(dd['pp'],np.float32))
+    dd['pv'] = []
+    for i in range(0,20):
+        dd['pv'].append([])
+    for i in range(0,dd['v'].shape[0]):
+        dd['pv'][matches[i][0].trainIdx].append(i)
     return readyArgument(dd)
 
 def loadTemplate():
