@@ -41,6 +41,11 @@ def loadObj(fname):
         dd['pv'].append([])
     for i in range(0,dd['v'].shape[0]):
         dd['pv'][matches[i][0].trainIdx].append(i)
+    matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32))
+    dd['pl'] = []
+    for i in range(0,20):
+        dd['pl'].append(matches[i][0].trainIdx)
+    print dd['pl']
     return readyArgument(dd)
 
 def loadTemplate():

@@ -35,7 +35,7 @@ class Rodrigues(ch.Ch):
 
 class RotWithMedian(ch.Ch):
     dterms = 'protMat','matchMat'
-    terms = 'dlist','mlist','indexArray'
+    terms = 'dlist','mlist','indexArray', 'dpp', 'mpp'
     def compute_r(self):
         npa = np.array(self.protMat.r,np.float32)
         b = np.array(self.matchMat.r,np.float32)
@@ -44,6 +44,7 @@ class RotWithMedian(ch.Ch):
             matches = getMatches(npa[self.dlist[i],:], b[self.mlist[i],:])
             for j in range(0,len(self.dlist[i])):
                 indexArray[self.dlist[i][j]] = self.mlist[i][matches[j][0].trainIdx]
+        indexArray[self.dpp] = self.mpp
         self.indexArray = indexArray
         return self.matchMat.r[indexArray,:] - self.protMat.r
     def compute_dr_wrt(self, wrt):
