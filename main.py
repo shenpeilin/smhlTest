@@ -8,7 +8,6 @@ import numpy as np
 import scipy.sparse as sp
 import cv2
 from posemapper import Rodrigues
-from posemapper import RotWithMedian
 from verts import verts_core
 
 def mapTwoMat(mat1,mat2):
@@ -78,8 +77,16 @@ print dd['pose']
 renderObj(ch.array(result/ch.max(result)),dd["f"])
 
 outmesh_path = './output.obj'
+outmesh_path_1 = './outputB.obj'
 with open( outmesh_path, 'w') as fp:
     for v in result.r:
+        fp.write( 'v %f %f %f\n' % ( v[0], v[1], v[2]) )
+
+    for f in dd['f']+1: # Faces are 1-based, not 0-based in obj files
+        fp.write( 'f %d %d %d\n' %  (f[0], f[1], f[2]) )
+
+with open( outmesh_path_1, 'w') as fp:
+    for v in ch.array(dd['v']).r:
         fp.write( 'v %f %f %f\n' % ( v[0], v[1], v[2]) )
 
     for f in dd['f']+1: # Faces are 1-based, not 0-based in obj files

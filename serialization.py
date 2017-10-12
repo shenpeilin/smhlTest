@@ -31,19 +31,19 @@ def loadObj(fname):
     plist = []
     tree = ET.parse(ppFname)
     root = tree.getroot()
-    for i in range(1,21):
+    for i in range(1,41):
         point = [float(root[i].get('x')),float(root[i].get('y')),float(root[i].get('z'))]
         plist.append(point)
     dd["pp"] = np.array(plist)
     matches = getMatches(np.array(dd['v'],np.float32),np.array(dd['pp'],np.float32))
     dd['pv'] = []
-    for i in range(0,20):
+    for i in range(0,40):
         dd['pv'].append([])
     for i in range(0,dd['v'].shape[0]):
         dd['pv'][matches[i][0].trainIdx].append(i)
     matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32))
     dd['pl'] = []
-    for i in range(0,20):
+    for i in range(0,40):
         dd['pl'].append(matches[i][0].trainIdx)
     print dd['pl']
     return readyArgument(dd)
