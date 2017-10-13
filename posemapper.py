@@ -1,22 +1,3 @@
-'''
-Copyright 2015 Matthew Loper, Naureen Mahmood and the Max Planck Gesellschaft.  All rights reserved.
-This software is provided for research purposes only.
-By using this software you agree to the terms of the SMPL Model license here http://smpl.is.tue.mpg.de/license
-
-More information about SMPL is available here http://smpl.is.tue.mpg.
-For comments or questions, please email us at: smpl@tuebingen.mpg.de
-
-
-About this file:
-================
-This module defines the mapping of joint-angles to pose-blendshapes. 
-
-Modules included:
-- posemap:
-  computes the joint-to-pose blend shape mapping given a mapping type as input
-
-'''
-
 import chumpy as ch
 import numpy as np
 from chumpy import ch_ops
@@ -33,7 +14,7 @@ class Rodrigues(ch.Ch):
         if wrt is self.rt:
             return cv2.Rodrigues(self.rt.r)[1].T
 
-class RotWithMedian(ch.Ch):
+class MatchPoint(ch.Ch):
     dterms = 'protMat','matchMat'
     terms = 'dlist','mlist','indexArray', 'dpp', 'mpp'
     def compute_r(self):
@@ -69,10 +50,10 @@ def posemap(s):
     else:
         raise Exception('Unknown posemapping: %s' % (str(s),))
 
-def getMatches(a,b):
+def getMatches(a,b,k):
     FLANN_INDEX_KDTREE = 1
     index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 8)
     search_params = dict(checks=50)   # or pass empty dictionary
     flann = cv2.FlannBasedMatcher(index_params,search_params)
-    matches = flann.knnMatch(a,b,k=1)
+    matches = flann.knnMatch(a,b,k)
     return matches

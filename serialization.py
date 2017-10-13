@@ -3,6 +3,7 @@ import numpy as np
 import chumpy as ch
 import xml.etree.ElementTree as ET
 from posemapper import getMatches
+import config
 
 def readyArgument(dd):
     for s in ['v','J','pose','weights']:
@@ -31,21 +32,24 @@ def loadObj(fname):
     plist = []
     tree = ET.parse(ppFname)
     root = tree.getroot()
-    for i in range(1,41):
+    for i in range(1,config.NUM_OF_POINTS+1):
         point = [float(root[i].get('x')),float(root[i].get('y')),float(root[i].get('z'))]
         plist.append(point)
     dd["pp"] = np.array(plist)
-    matches = getMatches(np.array(dd['v'],np.float32),np.array(dd['pp'],np.float32))
-    dd['pv'] = []
-    for i in range(0,40):
-        dd['pv'].append([])
-    for i in range(0,dd['v'].shape[0]):
-        dd['pv'][matches[i][0].trainIdx].append(i)
-    matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32))
+    # matches = getMatches(np.array(dd['v'],np.float32),np.array(dd['pp'],np.float32))
+    # dd['pv'] = []
+    # for i in range(0,config.NUM_OF_POINTS):
+    #     dd['pv'].append([])
+    # for i in range(0,dd['v'].shape[0]):
+    #     dd['pv'][matches[i][0].trainIdx].append(i)
+    matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32),50)
     dd['pl'] = []
-    for i in range(0,40):
+    dd['pv'] = []
+    for i in range(0,config.NUM_OF_POINTS):
         dd['pl'].append(matches[i][0].trainIdx)
-    print dd['pl']
+        dd['pv'].append([])
+        for j in range(0,50):
+            dd['pv'][i].append(matches[i][j].trainIdx)
     return readyArgument(dd)
 
 def loadTemplate():
