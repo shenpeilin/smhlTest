@@ -8,6 +8,7 @@ import numpy as np
 import scipy.sparse as sp
 import cv2
 from posemapper import Rodrigues
+from posemapper import MatchPoint
 from verts import verts_core
 
 def mapTwoMat(mat1,mat2):
@@ -41,7 +42,7 @@ def objFunc(dd,m):
         'want_Jtr': False,
         'bs_style': 'lbs',
     }
-    return ch.linalg.norm(verts_core(**args)[dd['pl']]-m['v'][m['pl']])
+    return ch.linalg.norm(MatchPoint(protMat = verts_core(**args),matchMat = m['v'] , dlist=dd['pv'], mlist=m['pv'], dpp=dd['pl'], mpp=m['pl']))
 
 dd=loadTemplate()
 m = loadObj('./HandScan/ZhangYueYi3.obj')

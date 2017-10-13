@@ -42,13 +42,13 @@ def loadObj(fname):
     #     dd['pv'].append([])
     # for i in range(0,dd['v'].shape[0]):
     #     dd['pv'][matches[i][0].trainIdx].append(i)
-    matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32),50)
+    matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32),config.POINT_IN_AREA)
     dd['pl'] = []
     dd['pv'] = []
     for i in range(0,config.NUM_OF_POINTS):
         dd['pl'].append(matches[i][0].trainIdx)
         dd['pv'].append([])
-        for j in range(0,50):
+        for j in range(0,config.POINT_IN_AREA):
             dd['pv'][i].append(matches[i][j].trainIdx)
     return readyArgument(dd)
 
