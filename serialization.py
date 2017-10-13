@@ -42,14 +42,25 @@ def loadObj(fname):
     #     dd['pv'].append([])
     # for i in range(0,dd['v'].shape[0]):
     #     dd['pv'][matches[i][0].trainIdx].append(i)
-    matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32),config.POINT_IN_AREA)
+    areaPointList = []
+    areaMatches = getMatches(np.array(dd['v'],np.float32),np.array(dd['pp'],np.float32),1)
+    for i in range(0,config.NUM_OF_POINTS):
+        areaPointList.append([])
+
+    for i in range(0,dd['v'].shape[0]):
+        areaPointList[areaMatches[i][0].trainIdx].append(i)
+    matches = getMatches(np.array(dd['pp'],np.float32),np.array(dd['v'],np.float32),1)
     dd['pl'] = []
-    dd['pv'] = []
     for i in range(0,config.NUM_OF_POINTS):
         dd['pl'].append(matches[i][0].trainIdx)
+    dd['pv'] = []
+    for i in range(0,config.NUM_OF_POINTS):
+        pointMatches = getMatches(np.array(dd['pp'][i],np.float32)
+        ,np.array(dd['v'][areaPointList[i]],np.float32)
+        ,config.POINT_IN_AREA)
         dd['pv'].append([])
         for j in range(0,config.POINT_IN_AREA):
-            dd['pv'][i].append(matches[i][j].trainIdx)
+            dd['pv'][i].append(areaPointList[i][pointMatches[0][j].trainIdx])
     return readyArgument(dd)
 
 def loadTemplate():
