@@ -1,8 +1,8 @@
 import chumpy as ch
 import numpy as np
-from chumpy import ch_ops
 import config
 import cv2
+from verts import verts_core
 
 
 class Rodrigues(ch.Ch):
@@ -17,15 +17,26 @@ class Rodrigues(ch.Ch):
 
 class MatchPoint(ch.Ch):
     dterms = 'protMat','matchMat'
-    terms = 'dlist','mlist','indexArray', 'dpp', 'mpp'
     def compute_r(self):
-        self.indexArray = np.zeros(len(self.dpp),np.int32)
-        for i in range(0,len(self.dpp)):
-            matches = getMatches(np.array(self.protMat[self.dpp[i]],np.float32),np.array(self.matchMat[self.mlist[i]],np.float32),1)
-            self.indexArray[i] = self.mlist[i][matches[0][0].trainIdx]
-        return self.matchMat.r[self.indexArray] - self.protMat.r[self.dpp]
+        args = {
+            'pose': self.dd['pose'],
+            'v': self.dd['v'],
+            'J': self.dd['J'],
+            'weights': self.dd['weights'],
+            'kintree_table': self.dd['kintree_table'],
+            'xp': ch,
+            'want_Jtr': False,
+            'bs_style': 'lbs',
+        }
+        self.protMat = verts_core(**args)
+        self.matchMat = self.m['v']
+        self.indexArray = np.zeros(len(self.dd['pl']),np.int32)
+        for i in range(0,len(self.dd['pl'])):
+            matches = getMatches(np.array(self.protMat[self.dd['pl'][i]],np.float32),np.array(self.matchMat[self.m['pv'][i]],np.float32),1)
+            self.indexArray[i] = self.m['pv'][i][matches[0][0].trainIdx]
+        return self.matchMat.r[self.indexArray] - self.protMat.r[self.dd['pl']]
     def compute_dr_wrt(self, wrt):
-        return (self.matchMat[self.indexArray]-self.protMat[self.dpp]).dr_wrt(wrt)
+        return (self.matchMat[self.indexArray]-self.protMat[self.dd['pl']]).dr_wrt(wrt)
 
 
 def lrotmin(p): 

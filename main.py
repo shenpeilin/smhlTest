@@ -2,7 +2,6 @@ from serialization import loadObj
 from serialization import loadTemplate
 import numpy as np
 from render import renderObj
-from matUtil import rotation
 import chumpy as ch
 import numpy as np
 import scipy.sparse as sp
@@ -11,38 +10,11 @@ from posemapper import Rodrigues
 from posemapper import MatchPoint
 from verts import verts_core
 
-def mapTwoMat(mat1,mat2):
-    x = np.zeros((1,mat1.shape[1]))
-    A = np.zeros((mat1.shape[0]*3,3))
-    for i in range(0,10):
-        point = mat1[0,:]
-        A[0:3,:] = np.array([[0,point[2],-point[1]],[-point[2],0,point[0]],[point[1],-point[0],0]])
-        for i in range(1,mat1.shape[0]):
-            point = mat1[i,:]
-            A[i*3:i*3+3,:] = np.array([[0,point[2],-point[1]],[-point[2],0,point[0]],[point[1],-point[0],0]])
-        print 'aaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-        b=np.reshape(mat2-mat1, (1,-1)).T
-
-        x = np.linalg.lstsq(A,b)
-        print x
-        R = np.array([[0,-x[0][2],x[0][1]], [x[0][2],0,-x[0][0]], [-x[0][1],x[0][0],0]])+np.eye(3)
-        mat1 = R.dot(mat1.T).T
-    return x
 def func(mat1,mat2,R):
     return ch.linalg.norm(Rodrigues(R).dot(mat1.T).T-mat2)
 
 def objFunc(dd,m):
-    args = {
-        'pose': dd['pose'],
-        'v': dd['v'],
-        'J': dd['J'],
-        'weights': dd['weights'],
-        'kintree_table': dd['kintree_table'],
-        'xp': ch,
-        'want_Jtr': False,
-        'bs_style': 'lbs',
-    }
-    return ch.linalg.norm(MatchPoint(protMat = verts_core(**args),matchMat = m['v'] , dlist=dd['pv'], mlist=m['pv'], dpp=dd['pl'], mpp=m['pl']))
+    return ch.linalg.norm(MatchPoint(dd=dd,m=m))
 
 dd=loadTemplate()
 m = loadObj('./HandScan/ZhangYueYi3.obj')
