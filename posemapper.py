@@ -15,7 +15,7 @@ class Rodrigues(ch.Ch):
         if wrt is self.rt:
             return cv2.Rodrigues(self.rt.r)[1].T
 
-class MatchPoint(ch.Ch):
+class MatchPointArea(ch.Ch):
     dterms = 'protMat','matchMat'
     def compute_r(self):
         args = {
