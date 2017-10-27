@@ -2,6 +2,9 @@ from posemapper import Rodrigues,MatchPointArea
 import chumpy as ch
 from render import renderObj
 from verts import verts_core
+from openmesh import *
+from nonIcp import nodeSampler
+import config
 
 class TemplateGenerator:
     def alignFunc(self,mat1,mat2,R):
@@ -14,6 +17,23 @@ class TemplateGenerator:
 
     def setScanModel(self , scanModel):
         self.scanModel = scanModel
+
+    def setTemplateMesh(self , fileName):
+        self.templateMesh = TriMesh()
+        if not read_mesh(self.templateMesh, fileName):
+            print "load template mesh error"
+            return
+        self.templateVertexNum = self.templateMesh.n_vertices()
+        self.templateEdgeNum = self.templateMesh.n_edges()
+        self.templateFaceNum = self.templateMesh.n_faces()
+        print "load template mesh successful"
+
+    def setScanMesh(self , fileName):
+        self.scanMesh = TriMesh()
+        if not read_mesh(self.scanMesh, fileName):
+            print "load scan mesh error"
+        else:
+            print "load scan mesh successful"
 
     def alignTemplate(self):
         R = ch.zeros(3)
@@ -63,4 +83,8 @@ class TemplateGenerator:
                 fp.write( 'f %d %d %d\n' %  (f[0], f[1], f[2]) )
 
         ## Print message
-        print '..Output mesh saved to: ', outmesh_path 
+        print '..Output mesh saved to: ', outmesh_path
+
+    def runPipeLine(self):
+        self.forwardSampler = nodeSampler.NodeSampler()
+        self.forwardSampler.sample(self.templateMesh , config.SAMPLERADIUS , 1)
