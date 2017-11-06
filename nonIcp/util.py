@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse as sparseMatrix
+import cv2
 
 def Vec3DToNp(v):
     return np.array([v[0],v[1],v[2]])

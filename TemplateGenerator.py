@@ -3,7 +3,7 @@ import chumpy as ch
 from render import renderObj
 from verts import verts_core
 from openmesh import *
-from nonIcp import nodeSampler
+from nonIcp import nrIcp
 import config
 
 class TemplateGenerator:
@@ -85,6 +85,7 @@ class TemplateGenerator:
         ## Print message
         print '..Output mesh saved to: ', outmesh_path
 
-    def runPipeLine(self):
-        self.forwardSampler = nodeSampler.NodeSampler()
-        self.forwardSampler.sample(self.templateMesh , config.SAMPLERADIUS , 1)
+    def runIcp(self):
+        self.nonRigitIcp = nrIcp.NonRigidIcp(self.templateMesh, self.scanMesh)
+        self.nonRigitIcp.runPipeLine()
+        write_mesh(self.templateMesh, 'nonIcp.obj')

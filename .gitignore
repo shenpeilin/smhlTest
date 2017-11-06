@@ -1,5 +1,6 @@
 *.pyc
 *.obj
+*.off
 HandScan
 template
 .vscode/
