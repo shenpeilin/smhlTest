@@ -4,6 +4,15 @@ import chumpy as ch
 import xml.etree.ElementTree as ET
 from posemapper import getMatches
 import config
+import os
+
+def getObjList():
+    objList = []
+    for root, dirs, files in os.walk('./HandScan'):
+        for fileName in files:
+            if os.path.splitext(fileName)[1] == '.obj':
+                objList.append(os.path.join(root,fileName));
+    return objList
 
 def readyArgument(dd):
     for s in ['v','J','pose','weights']:

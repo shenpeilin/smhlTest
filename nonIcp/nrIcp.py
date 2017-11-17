@@ -51,7 +51,7 @@ class NonRigidIcp:
                 self.forwardControlParams.relaxParams()
             
             if self.forwardControlParams.alphaRigid < 100 or icpIterCnt >= 100:
-                break
+                return vertexPair
 
             icpEnergyPrev = icpEnergy
             icpIterCnt += 1

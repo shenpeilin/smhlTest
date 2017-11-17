@@ -30,13 +30,9 @@ class MatchPointArea(ch.Ch):
         }
         self.protMat = verts_core(**args)
         self.matchMat = self.m['v']
-        self.indexArray = np.zeros(len(self.dd['pl']),np.int32)
-        for i in range(0,len(self.dd['pl'])):
-            matches = getMatches(np.array(self.protMat[self.dd['pl'][i]],np.float32),np.array(self.matchMat[self.m['pv'][i]],np.float32),1)
-            self.indexArray[i] = self.m['pv'][i][matches[0][0].trainIdx]
-        return self.matchMat.r[self.indexArray] - self.protMat.r[self.dd['pl']]
+        return self.matchMat.r[self.m['pl']] - self.protMat.r[self.dd['pl']]
     def compute_dr_wrt(self, wrt):
-        return (self.matchMat[self.indexArray]-self.protMat[self.dd['pl']]).dr_wrt(wrt)
+        return (self.matchMat[self.m['pl']]-self.protMat[self.dd['pl']]).dr_wrt(wrt)
 
 
 def lrotmin(p): 

@@ -5,8 +5,9 @@ from verts import verts_core
 from openmesh import *
 from nonIcp import nrIcp
 import config
+import cPickle as pickle
 
-class TemplateGenerator:
+class TemplateRigistor:
     def alignFunc(self,mat1,mat2,R):
         return ch.linalg.norm(Rodrigues(R).dot(mat1.T).T-mat2)
     def areaMatchFunc(self,dd,m):
@@ -30,6 +31,7 @@ class TemplateGenerator:
 
     def setScanMesh(self , fileName):
         self.scanMesh = TriMesh()
+        self.modelFileName = fileName
         if not read_mesh(self.scanMesh, fileName):
             print "load scan mesh error"
         else:
@@ -87,5 +89,8 @@ class TemplateGenerator:
 
     def runIcp(self):
         self.nonRigitIcp = nrIcp.NonRigidIcp(self.templateMesh, self.scanMesh)
-        self.nonRigitIcp.runPipeLine()
+        vertexPair = self.nonRigitIcp.runPipeLine()
+        mapFilename = self.modelFileName.replace(".obj", "Map.pkl")
+        with open(mapFilename, 'w') as f:
+            pickle.dump(vertexPair, f)
         write_mesh(self.templateMesh, 'nonIcp.obj')
