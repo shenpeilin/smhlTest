@@ -93,4 +93,6 @@ class TemplateRigistor:
         mapFilename = self.modelFileName.replace(".obj", "Map.pkl")
         with open(mapFilename, 'w') as f:
             pickle.dump(vertexPair, f)
-        write_mesh(self.templateMesh, 'nonIcp.obj')
+        idx = self.modelFileName.rfind('/')
+        nonIcpFileName = self.modelFileName[idx+1:].replace(".obj", "Icp.obj")
+        write_mesh(self.templateMesh, './NonIcp/'+nonIcpFileName)

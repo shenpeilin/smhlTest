@@ -10,7 +10,7 @@ for objFileName in objList:
     temp.alignTemplate()
     temp.areaMatch()
     temp.transTemplate()
-    temp.renderTransedTemplate()
+    # temp.renderTransedTemplate()
     temp.saveResult()
     temp.setTemplateMesh('./output.obj')
     temp.setScanMesh(objFileName)

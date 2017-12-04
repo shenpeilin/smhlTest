@@ -4,3 +4,4 @@
 HandScan
 template
 .vscode/
+*.pkl

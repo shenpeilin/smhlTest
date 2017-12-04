@@ -62,14 +62,14 @@ def loadObj(fname):
     dd['pl'] = []
     for i in range(0,config.NUM_OF_POINTS):
         dd['pl'].append(matches[i][0].trainIdx)
-    dd['pv'] = []
-    for i in range(0,config.NUM_OF_POINTS):
-        pointMatches = getMatches(np.array(dd['pp'][i],np.float32)
-        ,np.array(dd['v'][areaPointList[i]],np.float32)
-        ,config.POINT_IN_AREA)
-        dd['pv'].append([])
-        for j in range(0,config.POINT_IN_AREA):
-            dd['pv'][i].append(areaPointList[i][pointMatches[0][j].trainIdx])
+    # dd['pv'] = []
+    # for i in range(0,config.NUM_OF_POINTS):
+    #     pointMatches = getMatches(np.array(dd['pp'][i],np.float32)
+    #     ,np.array(dd['v'][areaPointList[i]],np.float32)
+    #     ,config.POINT_IN_AREA)
+    #     dd['pv'].append([])
+    #     for j in range(0,config.POINT_IN_AREA):
+    #         dd['pv'][i].append(areaPointList[i][pointMatches[0][j].trainIdx])
     return readyArgument(dd)
 
 def loadTemplate():
