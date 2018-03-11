@@ -20,8 +20,8 @@ class NonRigidIcp:
         forwardSampler = nodeSampler.NodeSampler()
         forwardSampler.sample(self.templateMesh , config.SAMPLERADIUS , 1)
         forwardSampler.constructGraph()
-        forwardSampler.drawNodes(self.templateMesh,'node.off')
-        forwardSampler.drawNodeGraph(self.templateMesh, 'nodeGraph.off')
+        # forwardSampler.drawNodes(self.templateMesh,'node.off')
+        # forwardSampler.drawNodeGraph(self.templateMesh, 'nodeGraph.off')
         accumAffineVector = self.initAffineVector(forwardSampler.nodeSize())
         anchorSampler = forwardSampler
         anchorMesh = self.templateMesh
@@ -74,19 +74,19 @@ class NonRigidIcp:
             v0 = currentNonRigidMesh.point(vh0)
             vh1 = knnTreeSolver.nearest(i)
             v1 = currentScanMesh.point(vh1)
-            isBoundary = currentScanMesh.is_boundary(vh1)
-            if(isBoundary):
-                continue
+            # isBoundary = currentScanMesh.is_boundary(vh1)
+            # if(isBoundary):
+            #     continue
 
-            n0 = util.Vec3DToNp(currentNonRigidMesh.normal(vh0))
-            n1 = util.Vec3DToNp(currentScanMesh.normal(vh1))
-            normalDot = np.dot(n0, n1)
-            if(normalDot < config.THETALIMIT/180.0 * np.pi):
-                continue
+            # n0 = util.Vec3DToNp(currentNonRigidMesh.normal(vh0))
+            # n1 = util.Vec3DToNp(currentScanMesh.normal(vh1))
+            # normalDot = np.dot(n0, n1)
+            # if(normalDot < config.THETALIMIT/180.0 * np.pi):
+            #     continue
             
-            dist = LA.norm(util.Vec3DToNp(v0 - v1))
-            if(dist > config.DISTLIMIT):
-                continue
+            # dist = LA.norm(util.Vec3DToNp(v0 - v1))
+            # if(dist > config.DISTLIMIT):
+            #     continue
 
             vertexPair.append((vh0.idx(), vh1.idx()))
         

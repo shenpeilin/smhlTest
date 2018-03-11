@@ -15,25 +15,6 @@ class Rodrigues(ch.Ch):
         if wrt is self.rt:
             return cv2.Rodrigues(self.rt.r)[1].T
 
-class MatchPointArea(ch.Ch):
-    dterms = 'protMat','matchMat'
-    def compute_r(self):
-        args = {
-            'pose': self.dd['pose'],
-            'v': self.dd['v'],
-            'J': self.dd['J'],
-            'weights': self.dd['weights'],
-            'kintree_table': self.dd['kintree_table'],
-            'xp': ch,
-            'want_Jtr': False,
-            'bs_style': 'lbs',
-        }
-        self.protMat = verts_core(**args)
-        self.matchMat = self.m['v']
-        return self.matchMat.r[self.m['pl']] - self.protMat.r[self.dd['pl']]
-    def compute_dr_wrt(self, wrt):
-        return (self.matchMat[self.m['pl']]-self.protMat[self.dd['pl']]).dr_wrt(wrt)
-
 
 def lrotmin(p): 
     if isinstance(p, np.ndarray):

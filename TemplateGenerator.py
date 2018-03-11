@@ -49,7 +49,6 @@ class MatchPointByJre(ch.Ch):
         return (self.matchMat[self.mapArray]-self.protMat).dr_wrt(wrt)
 
 class TemplateGenerator:
-    vList = []
     def alignFunc(self,mat1,mat2,R):
         return ch.linalg.norm(Rodrigues(R).dot(mat1.T).T-mat2)
 
@@ -63,6 +62,7 @@ class TemplateGenerator:
     def setTemplate(self, template):
         self.template = template
         self.vertexNum = template['v'].shape[0]
+        self.setTemplateMesh()
     
     def setScanModel(self, scanModel):
         self.scanModel = scanModel
@@ -81,7 +81,7 @@ class TemplateGenerator:
             vh1 = self.templateMesh.to_vertex_handle(h)
             adjMatrix[h.idx(),vh0.idx()] = 1
             adjMatrix[h.idx(),vh1.idx()] = -1
-        self.adjMatrix = adjMatrix
+        self.adjMatrix = adjMatrix.T
     
     def setMapArray(self, objFileName):
         mapFilename = objFileName.replace(".obj", "Map.pkl")
@@ -120,6 +120,7 @@ class TemplateGenerator:
             x1 = np.reshape(x1, (self.vertexNum, 1))
             x = np.concatenate((x, x1), 1)
         self.Jre = x
+        return self.Jre
     
     def transTemplate(self):
         args = {
@@ -139,18 +140,10 @@ class TemplateGenerator:
         print self.template['pose']
         renderObj(ch.array(self.result/ch.max(self.result)),self.template["f"])
     
-    def saveResult(self):
+    def saveResult(self, result):
         outmesh_path = './output.obj'
-        outmesh_path_1 = './outputB.obj'
         with open( outmesh_path, 'w') as fp: 
-            for v in self.result.r:
-                fp.write( 'v %f %f %f\n' % ( v[0], v[1], v[2]) )
-
-            for f in self.template['f']+1: # Faces are 1-based, not 0-based in obj files
-                fp.write( 'f %d %d %d\n' %  (f[0], f[1], f[2]) )
-
-        with open( outmesh_path_1, 'w') as fp:
-            for v in ch.array(self.template['v']).r:
+            for v in result.r:
                 fp.write( 'v %f %f %f\n' % ( v[0], v[1], v[2]) )
 
             for f in self.template['f']+1: # Faces are 1-based, not 0-based in obj files
@@ -168,11 +161,10 @@ class TemplateGenerator:
         ch.minimize(self.jrePointMatchFunc(dd=tjDic , m=self.scanModel),[tjDic['v']])
         tjDic['v'] = Rodrigues(-self.R).dot(tjDic['v'].T).T
         tjDic['v'] = tjDic['v']-self.t
-        TemplateGenerator.vList.append(np.reshape(tjDic['v'], (self.vertexNum * 3)))
+        return np.reshape(tjDic['v'], (self.vertexNum * 3))
 
     def saveGeneratedTemp(self):
         self.tmp = {}
-        TemplateGenerator.vList.append(np.reshape(self.template['v'],(-1)))
         allShape = np.array(TemplateGenerator.vList)
         pca = PCA()
         self.tmp['shape'] = pca.fit_transform(allShape.T).T
@@ -180,9 +172,16 @@ class TemplateGenerator:
         self.tmp['f'] = self.template['f']
         self.tmp['jRegressor'] = self.Jre
         self.tmp['weights'] = self.template['weights']
+        self.tmp['kintree_table'] = self.template['kintree_table']
+        self.tmp['pp'] = self.template['pp']
+        self.tmp['pl'] = self.template['pl']
         self.result = ch.array(np.reshape(self.tmp['v'],(-1,3)))
         self.saveResult()
         tmpFileName = 'template.pkl'
+        shapeFileName = 'shapList.pkl'
         with open(tmpFileName, 'w') as f:
             pickle.dump(self.tmp, f)
+
+        with open(shapeFileName, 'w') as f:
+            pickle.dump(TemplateGenerator.vList, f)
 

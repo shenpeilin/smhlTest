@@ -14,10 +14,11 @@ class MatchPoint(ch.Ch):
     dterms = 'protMat','matchMat'
     terms = 'mapArray'
     def compute_r(self):
+        v = self.dd['v'] + self.dd['beta'].dot(self.dd['shape']).reshape((-1,3))
         args = {
             'pose': self.dd['pose'],
-            'v': self.dd['v'] + self.dd['beta'].dot(self.dd['shape']).reshape((-1,3)),
-            'J': self.dd['v'].T.dot(self.dd['jRegressor']).T,
+            'v': v,
+            'J': v.T.dot(self.dd['jRegressor']).T,
             'weights': self.dd['weights'],
             'kintree_table': self.dd['kintree_table'],
             'xp': ch,
@@ -25,22 +26,24 @@ class MatchPoint(ch.Ch):
             'bs_style': 'lbs',
         }
         self.protMat = verts_core(**args)
-        self.matchMat = self.m['v']
-        return self.matchMat.r[self.mapArray] - self.protMat.r
+        self.matchMat = self.m['v'] - self.t
+        return ch.linalg.norm(self.matchMat.r[self.m['pl']] - self.protMat.r[self.dd['pl']])
     def compute_dr_wrt(self, wrt):
-        return (self.matchMat[self.mapArray]-self.protMat).dr_wrt(wrt)
+        return (ch.linalg.norm(self.matchMat[self.m['pl']] - self.protMat[self.dd['pl']])).dr_wrt(wrt) 
 
 class TemplateGenerator2:
     vList = []
     def alignFunc(self,mat1,mat2,R):
         return ch.linalg.norm(Rodrigues(R).dot(mat1.T).T-mat2)
 
-    def poseMatchFunc(self,dd,m):
-        return ch.linalg.norm(MatchPoint(dd=dd,m=m,mapArray = self.mapArray))
+    def poseMatchFunc(self,dd,m,t):
+        return MatchPoint(dd=dd,m=m,t=t,mapArray = self.mapArray)
 
     def loadTemplate(self):
         with open('template.pkl', 'rb') as f:
             self.template = pickle.load(f)
+        with open('shapList.pkl', 'rb') as f:
+            shapeList = pickle.load(f)
         self.template['v'] = self.template['v'].reshape((-1,3))
         self.vertexNum = self.template['v'].shape[0]
         self.template['J'] = (self.template['v'].T).dot(self.template['jRegressor']).T
@@ -66,17 +69,17 @@ class TemplateGenerator2:
         R = ch.zeros(3)
         t = self.scanModel['v'][self.mapArray[self.template['pl'][4]]]-self.template['pp'][4]
         ch.minimize(self.alignFunc(self.template['pp'][0:5,:]+t,self.scanModel['v'][self.mapArray[self.template['pl'][0:5]],:],R),[R])
-        self.template['v'] = self.template['v']+t
-        self.template['J'] = self.template['J']+t
-        self.template['v'] = Rodrigues(R).dot(self.template['v'].T).T
-        self.template['J'] = Rodrigues(R).dot(self.template['J'].T).T
+        self.scanModel['v'] = Rodrigues(-R).dot(self.scanModel['v'].T).T
+        self.scanModel['v'] = self.scanModel['v']-t
         self.R = R
         self.t = t
     
     def poseMatch(self):
-        ch.minimize(self.poseMatchFunc(dd=self.template , m=self.scanModel),[self.template["pose"]])
-        ch.minimize(self.poseMatchFunc(dd=self.template , m=self.scanModel),[self.template["beta"]])
-        ch.minimize(self.poseMatchFunc(dd=self.template , m=self.scanModel),[self.template["pose"]])
+        t = ch.zeros((3))
+        ch.minimize(self.poseMatchFunc(dd=self.template , m=self.scanModel, t=t),[self.template["pose"], t])
+        print 'bbbbbbbbbbbbbbbbb'
+        ch.minimize(self.poseMatchFunc(dd=self.template , m=self.scanModel, t=t),[self.template['pose'],self.template["beta"],t])
+        print t
     
     def renderTransedTemplate(self):
         # self.template['pose'] = ans[0]
@@ -84,10 +87,11 @@ class TemplateGenerator2:
         renderObj(ch.array(self.result/ch.max(self.result)),self.template["f"])
 
     def transTemplate(self):
+        v = self.template['v'] + self.template['beta'].dot(self.template['shape']).reshape((-1,3))
         args = {
             'pose': self.template['pose'],
-            'v': self.template['v'] + self.template['beta'].dot(self.template['shape']).reshape((-1,3)),
-            'J': self.template['v'].T.dot(self.template['jRegressor']).T,
+            'v': v,
+            'J': v.T.dot(self.template['jRegressor']).T,
             'weights': self.template['weights'],
             'kintree_table': self.template['kintree_table'],
             'xp': ch,
@@ -95,6 +99,8 @@ class TemplateGenerator2:
             'bs_style': 'lbs',
         }
         self.result = verts_core(**args)
+        self.result = self.result + self.t
+        self.result = Rodrigues(self.R).dot(self.result.T).T
         self.saveResult()
     
     def saveResult(self):

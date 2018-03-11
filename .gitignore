@@ -2,6 +2,7 @@
 *.obj
 *.off
 HandScan
+HandScan2
 template
 .vscode/
 *.pkl

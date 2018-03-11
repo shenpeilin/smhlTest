@@ -32,7 +32,6 @@ def verts_core(pose, v, J, weights, kintree_table, bs_style, want_Jtr=False, xp=
     if xp == chumpy:
         assert(hasattr(pose, 'dterms'))
         assert(hasattr(v, 'dterms'))
-        assert(hasattr(J, 'dterms'))
         assert(hasattr(weights, 'dterms'))
      
     assert(bs_style=='lbs')
